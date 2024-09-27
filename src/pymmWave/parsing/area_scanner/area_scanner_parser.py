@@ -7,7 +7,10 @@ from ..sensor_parser import SensorParser
 
 
 class AreaScannerParser(SensorParser):
-    """Parses data from the firmware of the area scanner example project."""
+    """
+    Parsing data in the format of the area scanner example project.<br/>
+    Refer to the <a href="https://dev.ti.com/tirex/explore/content/mmwave_industrial_toolbox_4_12_1/labs/Area_Scanner/docs/area_scanner_users_guide.html#data-output-format">documentation</a> for more information.
+    """
 
     def parse(self, s: Serial) -> Dict:
 
