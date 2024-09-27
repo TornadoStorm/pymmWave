@@ -1,6 +1,25 @@
 [build-system]
-requires = [
-    "setuptools>=49",
-    "wheel"
-]
+requires = ["setuptools>=49", "wheel"]
 build-backend = "setuptools.build_meta"
+
+[project]
+name = "pymmWave"
+version = "1.2.3"
+description = "A TI mmWave RADAR EVM integration library."
+readme = "README.md"
+readme-content-type = "text/markdown"
+requires-python = ">=3.9"
+license = { file = "LICENSE" }
+authors = [
+    { name = "Julian Dühnen", email = "julianduehnen@gmail.com" }
+]
+urls = { "Homepage" = "https://gitlab.utwente.nl/dp-6/pymmwave" }
+dependencies = [
+    "numpy>=2.1.1",
+    "scipy>=1.14.1",
+    "pyserial>=3.5"
+]
+
+[tool.setuptools]
+py-modules = ["pymmWave"]
+include-package-data = true
