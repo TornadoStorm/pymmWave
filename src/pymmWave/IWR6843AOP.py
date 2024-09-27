@@ -35,7 +35,7 @@ class IWR6843AOP(Sensor):
     Can be initialized with a public 'name', which can be used for sensor reference.
     """
 
-    _parser: SensorParser
+    parser: SensorParser
     """The parser used to parse raw data from the sensor. Defaults to AreaScannerParser()"""
 
     def __init__(self, name: str, verbose: bool = False):
@@ -64,15 +64,7 @@ class IWR6843AOP(Sensor):
         self._freq: float = 10.0
         self._last_t: float = 0.0
 
-        self._parser: SensorParser = AreaScannerParser()
-
-    def set_parser(self, parser: SensorParser) -> None:
-        """Set the parser to use for this sensor.
-
-        Args:
-            parser (SensorParser): Parser to use
-        """
-        self._parser = parser
+        self.parser: SensorParser = AreaScannerParser()
 
     def connect_config(self, com_port: str, baud_rate: int, timeout: int = 1) -> bool:
         """Connect to the config port. Must be done before sending config.
@@ -282,7 +274,7 @@ class IWR6843AOP(Sensor):
                 if current_data is None:
                     raise SerialException()
 
-                new_data = self._parser.parse(self._ser_data)
+                new_data = self.parser.parse(self._ser_data)
 
                 if self._active_data.full():
                     self._active_data.get_nowait()
