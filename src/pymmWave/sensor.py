@@ -1,14 +1,17 @@
 from abc import ABC, abstractmethod
-from typing import Optional, Any
-from .data_model import DataModel
-from scipy.spatial.transform.rotation import Rotation
 from enum import Enum
+from typing import Any, Dict, Optional
+
+from scipy.spatial.transform.rotation import Rotation
+
 from .logging import Logger, StdOutLogger
+
 
 class Sensor(ABC):
     """
     Base sensor class. The goal of this class implementation is such that users can implement classes which can then be used with our library of algorithms easily.
     """
+
     def __init__(self) -> None:
         super().__init__()
         self._log: Logger = StdOutLogger()
@@ -22,13 +25,11 @@ class Sensor(ABC):
         self._logger = new_logger
 
     def log(self, *args: Any, **kwargs: Any) -> None:
-        """Log something to the logger.
-        """
+        """Log something to the logger."""
         self._log.log(*args, **kwargs)
 
     def error(self, *args: Any, **kwargs: Any) -> None:
-        """Report an error to the logger.
-        """
+        """Report an error to the logger."""
         self._log.log(*args, **kwargs)
 
     @abstractmethod
@@ -39,7 +40,7 @@ class Sensor(ABC):
             str: Name of sensor
         """
         pass
-    
+
     @abstractmethod
     def is_alive(self) -> bool:
         """Check if sensor is still alive
@@ -68,13 +69,12 @@ class Sensor(ABC):
         pass
 
     @abstractmethod
-    async def get_data(self) -> DataModel:
-        """Return data from sensor.
-        """
+    async def get_data(self) -> Dict:
+        """Return data from sensor."""
         pass
 
     @abstractmethod
-    def get_data_nowait(self) -> Optional[DataModel]:
+    def get_data_nowait(self) -> Optional[Dict]:
         """Return data from sensor if available, otherwise None.
 
         Returns:
@@ -84,19 +84,24 @@ class Sensor(ABC):
 
     @abstractmethod
     def get_update_freq(self) -> float:
-        """Returns the sensor update freq. This is reccommended to be the actual rate of data access.
-        """
+        """Returns the sensor update freq. This is reccommended to be the actual rate of data access."""
         pass
 
+
 class SpatialSensor(object):
-    """Wrapper to provide the notion of a sensor in space
-    """
-    def __init__(self, sens: Sensor, location: tuple[float, float, float], pitch_rads: tuple[float, float, float]):
+    """Wrapper to provide the notion of a sensor in space"""
+
+    def __init__(
+        self,
+        sens: Sensor,
+        location: tuple[float, float, float],
+        pitch_rads: tuple[float, float, float],
+    ):
         self.sensor = sens
         self.location = location
-        
+
         # This speeds up code later
-        self.pitch_rads: Rotation = Rotation.from_rotvec(pitch_rads) #type: ignore
+        self.pitch_rads: Rotation = Rotation.from_rotvec(pitch_rads)  # type: ignore
 
 
 class InvalidSensorException(Exception):

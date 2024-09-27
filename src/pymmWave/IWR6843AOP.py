@@ -1,22 +1,21 @@
-from dataclasses import dataclass
-from typing import Optional
-
-from serial import Serial # type: ignore
 from asyncio import Queue, sleep
+from dataclasses import dataclass
 from time import time
+from typing import Dict, Optional
 
-import numpy as np
+from serial import Serial  # type: ignore
 from serial.serialutil import SerialException
 
-from .sensor import Sensor
 from .constants import ASYNC_SLEEP, MAGIC_NUMBER
 from .parsing.area_scanner.area_scanner_parser import AreaScannerParser
 from .parsing.sensor_parser import SensorParser
+from .sensor import Sensor
+
 
 @dataclass(init=False)
 class Frame:
-    """Frame class for the sensor. Only holds data attributes, similar to a struct
-    """
+    """Frame class for the sensor. Only holds data attributes, similar to a struct"""
+
     packet: float
     idxPacket: float
     header: float
@@ -30,11 +29,13 @@ class Frame:
     numDetectedObj: int = -1
     detectedPoints_byteVecIdx: int = -1
 
+
 class IWR6843AOP(Sensor):
     """Abstract :obj:`Sensor<mmWave.sensor.Sensor>` class implementation for interfacing with the COTS TI IWR6843AOP evaluation board.
     Can be initialized with a public 'name', which can be used for sensor reference.
     """
-    def __init__(self, name: str, verbose: bool=False):
+
+    def __init__(self, name: str, verbose: bool = False):
         """Initialize the sensor
 
         Args:
@@ -42,7 +43,7 @@ class IWR6843AOP(Sensor):
         """
         super().__init__()
         self._is_alive: bool = False
-        self._ser_config: Optional[Serial]  = None
+        self._ser_config: Optional[Serial] = None
         self._ser_data: Optional[Serial] = None
         self._verbose = verbose
         self._config_sent = False
@@ -61,7 +62,7 @@ class IWR6843AOP(Sensor):
 
         self._parser: SensorParser = AreaScannerParser()
 
-    def connect_config(self, com_port: str, baud_rate: int, timeout: int=1) -> bool:
+    def connect_config(self, com_port: str, baud_rate: int, timeout: int = 1) -> bool:
         """Connect to the config port. Must be done before sending config.
         This function will timeout after a second by default. This timeout period is low since programmatically connecting to serial ports might be difficult with long timeout periods, as it is difficult to know apriori if you are connecting to config or data.
 
@@ -98,7 +99,7 @@ class IWR6843AOP(Sensor):
 
         return True
 
-    def connect_data(self, com_port: str, baud_rate: int, timeout: int=1) -> bool:
+    def connect_data(self, com_port: str, baud_rate: int, timeout: int = 1) -> bool:
         """Connect the data serial port. Must be done before sending config.
 
         Args:
@@ -134,11 +135,8 @@ class IWR6843AOP(Sensor):
 
         return True
 
-
-
     def _update_alive(self):
-        """Internal func to verify the sensor is still connected
-        """
+        """Internal func to verify the sensor is still connected"""
         if self._ser_config is not None and self._ser_data is not None:  # type: ignore
             self._is_alive = self._ser_config.is_open and self._ser_data.is_open  # type: ignore
 
@@ -163,7 +161,9 @@ class IWR6843AOP(Sensor):
         """
         return "IWR6843AOP"
 
-    def send_config(self, config: list[str], max_retries: int=1, autoretry_cfg_data: bool=True) -> bool:
+    def send_config(
+        self, config: list[str], max_retries: int = 1, autoretry_cfg_data: bool = True
+    ) -> bool:
         """Tried to send a TI config, with a simple retry mechanism.
         Configuration files can be created here: `https://dev.ti.com/gallery/view/mmwave/mmWave_Demo_Visualizer/ver/3.5.0/`. Future support may be built for creating configuration files.
 
@@ -188,21 +188,21 @@ class IWR6843AOP(Sensor):
             attempts += 1
             failed = False
             for line in config:
-                if line[0] == '%' or line[0] == '\n':
+                if line[0] == "%" or line[0] == "\n":
                     pass
                 else:
-                    ln = line.replace('\r','')
+                    ln = line.replace("\r", "")
                     self._ser_config.write(ln.encode())  # type: ignore
 
                     try:
                         ret1 = self._ser_config.readline()  # type: ignore
-                        ret1 = ret1.decode('utf-8')[:-1].strip()   # type: ignore
+                        ret1 = ret1.decode("utf-8")[:-1].strip()  # type: ignore
                     except UnicodeDecodeError:
                         ret1 = "error"
 
                     try:
-                        ret = self._ser_config.readline()   # type: ignore
-                        ret = ret.decode('utf-8')[:-1].strip()  # type: ignore
+                        ret = self._ser_config.readline()  # type: ignore
+                        ret = ret.decode("utf-8")[:-1].strip()  # type: ignore
                     except UnicodeDecodeError:
                         ret = "error"
 
@@ -217,7 +217,7 @@ class IWR6843AOP(Sensor):
             if not failed:
                 self._config_sent = True
                 return True
-        
+
         # There are various reasons for failure. One of the more common is due to swapping of cfg/data.
         if not autoretry_cfg_data:
             return False
@@ -225,18 +225,19 @@ class IWR6843AOP(Sensor):
         # we need to close config/data connections, and attempt to reconnect.
         # Swaps ports and their baud rates. Trying to reopen connections just does not work.
         self.log("Attempting to auto-resolve configuration error.")
-        self._ser_config.reset_output_buffer()   # type: ignore
-        self._ser_data.reset_output_buffer()   # type: ignore
-        self._ser_config.reset_input_buffer()   # type: ignore
-        self._ser_data.reset_input_buffer()   # type: ignore
-        self._ser_config.baudrate = self._data_baud   # type: ignore
+        self._ser_config.reset_output_buffer()  # type: ignore
+        self._ser_data.reset_output_buffer()  # type: ignore
+        self._ser_config.reset_input_buffer()  # type: ignore
+        self._ser_data.reset_input_buffer()  # type: ignore
+        self._ser_config.baudrate = self._data_baud  # type: ignore
         self._ser_data.baudrate = self._config_baud  # type: ignore
-        tmp = self._ser_data   # type: ignore
-        self._ser_data = self._ser_config   # type: ignore
+        tmp = self._ser_data  # type: ignore
+        self._ser_data = self._ser_config  # type: ignore
         self._ser_config = tmp
 
-
-        self.log(f"Swapped opened config ({self._config_port_name}) and data ports ({self._data_port_name}).")
+        self.log(
+            f"Swapped opened config ({self._config_port_name}) and data ports ({self._data_port_name})."
+        )
         self.log("Retrying configuration.")
         return self.send_config(config, max_retries, autoretry_cfg_data=False)
 
@@ -255,11 +256,11 @@ class IWR6843AOP(Sensor):
 
         if not self._is_alive:
             raise Exception("Disconnected sensor")
-        
+
         if not self._config_sent:
             raise Exception("Config never sent to device")
-        
-        current_data: bytes = b''
+
+        current_data: bytes = b""
         while True:
             await sleep(ASYNC_SLEEP)
             try:
@@ -268,12 +269,12 @@ class IWR6843AOP(Sensor):
 
                 if current_data is None:
                     raise SerialException()
-                
+
                 new_data = self._parser.parse(self._ser_data)
 
                 if self._active_data.full():
                     self._active_data.get_nowait()
-                    
+
                 self._active_data.put_nowait(new_data)
 
                 # print(f"Packet Version: {new_data['major_num']}.{new_data['minor_num']}.{new_data['bugfix_num']}.{new_data['build_num']}")
@@ -300,8 +301,8 @@ class IWR6843AOP(Sensor):
                 pass
 
         return None
-        
-    async def get_data(self) -> dict:
+
+    async def get_data(self) -> Dict:
         """Returns data when it is ready. This function also updates the frequency measurement of the sensor.
         This function is blocking.
 
@@ -310,28 +311,26 @@ class IWR6843AOP(Sensor):
         """
         data = await self._active_data.get()
         tt = time()
-        self._freq = (1/(tt-self._last_t))*.5 + self._freq*.5
+        self._freq = (1 / (tt - self._last_t)) * 0.5 + self._freq * 0.5
         self._last_t = tt
         return data
-        
 
-    def get_data_nowait(self) -> Optional[dict]:
+    def get_data_nowait(self) -> Optional[Dict]:
         """Returns data if it is ready, otherwise none. This function also updates the frequency measurement of the sensor if data is available.
 
         Returns:
             Optional[dict]: Data if there is data available, otherwise returns None.
         """
-        if(self._active_data.full()):
+        if self._active_data.full():
             tt = time()
-            self._freq = (1/(tt-self._last_t))*.5 + self._freq*.5
+            self._freq = (1 / (tt - self._last_t)) * 0.5 + self._freq * 0.5
             self._last_t = tt
             return self._active_data.get_nowait()
-        
+
         return None
 
     def stop_sensor(self):
-        """This function attempts to close all serial ports and update internal state booleans.
-        """
+        """This function attempts to close all serial ports and update internal state booleans."""
         try:
             self._ser_config.close()  # type: ignore
             self._ser_data.close()  # type: ignore
@@ -339,7 +338,7 @@ class IWR6843AOP(Sensor):
             pass
         self._update_alive()
 
-    def configure_filtering(self, doppler_filtering: float=0) -> bool:
+    def configure_filtering(self, doppler_filtering: float = 0) -> bool:
         """Sets basic doppler filtering to allow for static noise removal.
         Doppler filtering sets a floor for doppler results, to remove points less than the input.
 
@@ -349,7 +348,7 @@ class IWR6843AOP(Sensor):
         Returns:
             bool: success
         """
-        self._doppler_filtering =  doppler_filtering
+        self._doppler_filtering = doppler_filtering
 
         return True
 
