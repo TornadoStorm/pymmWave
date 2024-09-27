@@ -10,9 +10,6 @@ class AreaScannerParser(SensorParser):
     """Parses data from the firmware of the area scanner example project."""
 
     def parse(self, s: Serial) -> Dict:
-        """
-        Parse the data from the sensor.
-        """
 
         result = {}
 

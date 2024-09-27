@@ -35,12 +35,16 @@ class IWR6843AOP(Sensor):
     Can be initialized with a public 'name', which can be used for sensor reference.
     """
 
+    _parser: SensorParser
+    """The parser used to parse raw data from the sensor. Defaults to AreaScannerParser()"""
+
     def __init__(self, name: str, verbose: bool = False):
         """Initialize the sensor
 
         Args:
             verbose (bool, optional): Print out extra initialization information, can be useful. Defaults to False.
         """
+
         super().__init__()
         self._is_alive: bool = False
         self._ser_config: Optional[Serial] = None
@@ -61,6 +65,14 @@ class IWR6843AOP(Sensor):
         self._last_t: float = 0.0
 
         self._parser: SensorParser = AreaScannerParser()
+
+    def set_parser(self, parser: SensorParser) -> None:
+        """Set the parser to use for this sensor.
+
+        Args:
+            parser (SensorParser): Parser to use
+        """
+        self._parser = parser
 
     def connect_config(self, com_port: str, baud_rate: int, timeout: int = 1) -> bool:
         """Connect to the config port. Must be done before sending config.
@@ -244,7 +256,7 @@ class IWR6843AOP(Sensor):
     async def start_sensor(self) -> None:
         """Starts the sensor and will place data into a queue.
         The goal of this function is to manage the state of the entire application. Nothing will happen if this function is not run with asyncio.
-        This function attempts to read data from the sensor as quickly as it can, then extract positional+doppler data, and place data into an asyncio.Queue.
+        This function attempts to read data from the sensor as quickly as it can, then extract data, and place data into an asyncio.Queue.
         Since this relies on the asyncio Queue, limitations may stem from asyncio. These issues, mainly revolving around thread safety, can be dealt with at the application layer.
 
         This function also actively attempts to context switch between intervals to minimize overhead.
@@ -276,26 +288,6 @@ class IWR6843AOP(Sensor):
                     self._active_data.get_nowait()
 
                 self._active_data.put_nowait(new_data)
-
-                # print(f"Packet Version: {new_data['major_num']}.{new_data['minor_num']}.{new_data['bugfix_num']}.{new_data['build_num']}")
-                # print("Total Packet Length:", new_data['total_packet_len'])
-                # print("Platform Type:", new_data['platform_type'])
-                # print("Frame Number:", new_data['frame_number'])
-                # print("Time in CPU Cycles:", new_data['time_cpu_cycles'])
-                # print("Number of Detected Objects:", new_data['num_detected_obj'])
-                # print("Number of TLVs:", new_data['num_tlvs'])
-                # print("Subframe Number:", new_data['subframe_number'])
-                # print("Number of Static Detected Objects:", new_data['num_static_detected_obj'])
-
-                # if ("dynamic_points" in new_data):
-                #     print(" Dynamic Points:")
-                #     for point in new_data['dynamic_points']:
-                #         print(f" Target ID: {point.target_id if hasattr(point, 'target_id') else "N/A"} Range: {point.range}, Angle: {point.angle}, Elevation: {point.elev}, Doppler: {point.doppler}")
-
-                # if ("static_points" in new_data):
-                #     print(" Static Points:")
-                #     for point in new_data['static_points']:
-                #         print(f"  X: {point.x}, Y: {point.y}, Z: {point.z}, Doppler: {point.doppler}")
 
             except (IndexError, ValueError) as _:
                 pass
@@ -337,20 +329,6 @@ class IWR6843AOP(Sensor):
         except SerialException:
             pass
         self._update_alive()
-
-    def configure_filtering(self, doppler_filtering: float = 0) -> bool:
-        """Sets basic doppler filtering to allow for static noise removal.
-        Doppler filtering sets a floor for doppler results, to remove points less than the input.
-
-        Args:
-            doppler_filtering (float, optional): Doppler removal level, recommended to be fairly low. Defaults to 0.
-
-        Returns:
-            bool: success
-        """
-        self._doppler_filtering = doppler_filtering
-
-        return True
 
     def get_update_freq(self) -> float:
         """Returns the frequency that the sensor is returning data at. This is not equivalent to the true capacity of the sensor, but rather the rate which the application is successfully getting data.

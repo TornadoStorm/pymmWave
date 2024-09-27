@@ -52,7 +52,7 @@ class Sensor(ABC):
 
     @abstractmethod
     async def start_sensor(self) -> None:
-        """Asynchronous loop that can be run as a corouting with asyncio, or other asynchronous libraries.
+        """Asynchronous loop that can be run as a coroutine with asyncio, or other asynchronous libraries.
 
         Returns:
             Nothing, will be run as a coroutine!
