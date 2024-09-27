@@ -1,7 +1,8 @@
 from abc import ABC, abstractmethod
-from typing import Any
+from typing import Any, Dict
 
 from serial import Serial
+
 
 class SensorParser(ABC):
     """
@@ -9,7 +10,7 @@ class SensorParser(ABC):
     """
 
     @abstractmethod
-    def parse(self, s: Serial) -> dict:
+    def parse(self, s: Serial) -> Dict:
         """
         Parse the data from the sensor.
         """
