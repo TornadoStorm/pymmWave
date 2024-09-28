@@ -1,0 +1,14 @@
+stages :
+  - build
+pages:
+  stage: build
+  script:
+    - mkdocs build
+    - mv site public
+  artifacts:
+    paths:
+      - public
+  only:
+    - main
+  tags:
+    - gitlab-org-docker
