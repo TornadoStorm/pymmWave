@@ -23,13 +23,14 @@ $ pip install numpy
 The following example code reads and prints the parsed and transformed sensor data. Make sure the serial ports are correctly configured to point to the sensor's DATA and CONF ports, and that the sensor's height and elevation tilt match the settings below.
 
 ```python
-from pymmWave.parsing.area_scanner.area_scanner_parser import AreaScannerParser
-from pymmWave.utils import load_cfg_file
-from pymmWave.sensor import Sensor
-from pymmWave.IWR6843AOP import IWR6843AOP
-import numpy as np
 import asyncio
 import json
+
+import numpy as np
+from pymmWave.IWR6843AOP import IWR6843AOP
+from pymmWave.parsing.area_scanner.area_scanner_parser import AreaScannerParser
+from pymmWave.sensor import Sensor
+from pymmWave.utils import load_cfg_file
 
 sensor1 = IWR6843AOP("1", verbose=False)
 file = load_cfg_file("./sensor_configs/area_scanner_68xx_AOP.cfg")
@@ -40,13 +41,13 @@ parser.elevation_tilt = np.radians(-15)
 sensor1.parser = parser
 
 # Your CONFIG serial port name
-config_connected = sensor1.connect_config('COM5', 115200)
+config_connected = sensor1.connect_config("COM5", 115200)
 if not config_connected:
     print("Config connection failed.")
     exit()
 
 # Your DATA serial port name
-data_connected = sensor1.connect_data('COM4', 921600)
+data_connected = sensor1.connect_data("COM4", 921600)
 if not data_connected:
     print("Data connection failed.")
     exit()
@@ -55,12 +56,14 @@ if not sensor1.send_config(file, max_retries=1):
     print("Sending configuration failed")
     exit()
 
+
 # Basic class to print data from the sensor
 async def print_data(sens: Sensor):
     await asyncio.sleep(2)
     while True:
         sensor_data = await sens.get_data()
         print(json.dumps(sensor_data))
+
 
 event_loop = asyncio.new_event_loop()
 
