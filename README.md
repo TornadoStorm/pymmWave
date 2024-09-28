@@ -32,7 +32,7 @@ import asyncio
 import json
 
 sensor1 = IWR6843AOP("1", verbose=False)
-file = load_cfg_file("./example_configs/are_scanner_AOP.cfg")
+file = load_cfg_file("./sensor_configs/area_scanner_68xx_AOP.cfg")
 
 parser = AreaScannerParser()
 parser.height = 1.3
@@ -40,13 +40,13 @@ parser.elevation_tilt = np.radians(-15)
 sensor1.parser = parser
 
 # Your CONFIG serial port name
-config_connected = sensor1.connect_config('/dev/tty.SLAB_USBtoUART4', 115200)
+config_connected = sensor1.connect_config('COM5', 115200)
 if not config_connected:
     print("Config connection failed.")
     exit()
 
 # Your DATA serial port name
-data_connected = sensor1.connect_data('/dev/tty.SLAB_USBtoUART', 921600)
+data_connected = sensor1.connect_data('COM4', 921600)
 if not data_connected:
     print("Data connection failed.")
     exit()
