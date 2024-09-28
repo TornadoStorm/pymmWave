@@ -27,6 +27,7 @@ from pymmWave.parsing.area_scanner.area_scanner_parser import AreaScannerParser
 from pymmWave.utils import load_cfg_file
 from pymmWave.sensor import Sensor
 from pymmWave.IWR6843AOP import IWR6843AOP
+import numpy as np
 import asyncio
 import json
 
