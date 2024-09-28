@@ -9,7 +9,7 @@ Run the following code in your terminal to get the latest version:
 $ pip install git+ssh://git@gitlab.utwente.nl/dp-6/pymmwave.git@main#egg=pymmwave
 ```
 
-## Quick Start
+## Quickstart
 
 Ensure you have flashed the firmware for the Industrial Toolbox's [Area Scanner](https://dev.ti.com/tirex/explore/content/mmwave_industrial_toolbox_4_12_1/labs/Area_Scanner/docs/area_scanner_users_guide.html) project.
 
