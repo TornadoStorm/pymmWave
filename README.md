@@ -5,6 +5,7 @@ This is a python package built upon the original [pymmWave](https://github.com/p
 ## Installation
 
 Run the following code in your terminal to get the latest version:
+
 ```console
 $ pip install git+ssh://git@gitlab.utwente.nl/dp-6/pymmwave.git@main#egg=pymmwave
 ```
@@ -16,7 +17,6 @@ Ensure you have flashed the firmware for the Industrial Toolbox's [Area Scanner]
 The following example code reads and prints the parsed and transformed sensor data. Make sure the serial ports are correctly configured to point to the sensor's DATA and CONF ports, and that the sensor's height and elevation tilt match the settings below.
 
 ```python
-
 from pymmWave.parsing.area_scanner.area_scanner_parser import AreaScannerParser
 from pymmWave.utils import load_cfg_file
 from pymmWave.sensor import Sensor
@@ -61,4 +61,3 @@ event_loop.create_task(sensor1.start_sensor())
 event_loop.create_task(print_data(sensor1))
 event_loop.run_forever()
 ```
-
