@@ -75,6 +75,8 @@ class AreaScannerParser(SensorParser):
                                 struct.unpack("f", current_point[0:4])[0],
                                 struct.unpack("f", current_point[4:8])[0],
                                 struct.unpack("f", current_point[8:12])[0],
+                                self.height,
+                                self.elevation_tilt,
                             )
 
                             result["dynamic_points"].append(
