@@ -14,6 +14,12 @@ $ pip install git+ssh://git@gitlab.utwente.nl/dp-6/pymmwave.git@main#egg=pymmwav
 
 Ensure you have flashed the firmware for the Industrial Toolbox's [Area Scanner](https://dev.ti.com/tirex/explore/content/mmwave_industrial_toolbox_4_12_1/labs/Area_Scanner/docs/area_scanner_users_guide.html) project.
 
+For this example you'll need the numpy package:
+
+```console
+$ pip install numpy
+```
+
 The following example code reads and prints the parsed and transformed sensor data. Make sure the serial ports are correctly configured to point to the sensor's DATA and CONF ports, and that the sensor's height and elevation tilt match the settings below.
 
 ```python
