@@ -81,6 +81,7 @@ class AreaScannerParser(SensorParser):
 
                             result["dynamic_points"].append(
                                 {
+                                    "target_id": 255,  # Default value
                                     "range": pos[0],
                                     "angle": pos[1],
                                     "elev": pos[2],
@@ -179,13 +180,6 @@ class AreaScannerParser(SensorParser):
                             )
                     case 11:
                         for i in range(len(tlv_payload)):
-                            # If point n was associated to a target, the value of Target ID will be the ID of the associated Target.
-                            # Otherwise, the value will indicated the reason the point was not associated.
-                            # Target ID can have the following values:
-                            # <250: The ID of the tracked object the point has been associated to
-                            # 253: Point not associated, doesn't meet SNR requirements
-                            # 254: Point not associated, located outside Boundary Box area
-                            # 255: Point not associated, considered noise
                             result["dynamic_points"][i]["target_id"] = int.from_bytes(
                                 [tlv_payload[i]], byteorder="little"
                             )
