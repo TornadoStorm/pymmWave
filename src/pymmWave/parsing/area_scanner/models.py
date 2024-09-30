@@ -47,7 +47,7 @@ class DynamicPoint:
     noise: int
 
     def __init__(self, data: Dict):
-        object.__setattr__(self, "id", data["target_id"])
+        object.__setattr__(self, "target_id", data["target_id"])
         object.__setattr__(self, "range", data["range"])
         object.__setattr__(self, "angle", data["angle"])
         object.__setattr__(self, "elev", data["elev"])
