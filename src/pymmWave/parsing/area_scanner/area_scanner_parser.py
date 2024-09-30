@@ -88,6 +88,8 @@ class AreaScannerParser(SensorParser):
                                     "doppler": struct.unpack("f", current_point[12:16])[
                                         0
                                     ],
+                                    "snr": 0,  # Default value
+                                    "noise": 0,  # Default value
                                 }
                             )
                     case 7:
@@ -121,6 +123,8 @@ class AreaScannerParser(SensorParser):
                                     "doppler": struct.unpack("f", current_point[12:16])[
                                         0
                                     ],
+                                    "snr": 0,  # Default value
+                                    "noise": 0,  # Default value
                                 }
                             )
                     case 9:
