@@ -3,7 +3,7 @@ import unittest
 
 import numpy as np
 
-import pymmWave.utils as utils
+import src.pymmWave.utils as utils
 
 
 class TestCoordinateConversion(unittest.TestCase):

@@ -33,9 +33,9 @@ def spherical_to_cartesian(
     :return: Cartesian coordinates.
     """
 
-    x: float = range * np.cos(elev) * np.cos(angle)
-    y: float = range * np.cos(elev) * np.sin(angle)
-    z: float = range * np.sin(elev)
+    x: float = float(range * np.cos(elev) * np.cos(angle))
+    y: float = float(range * np.cos(elev) * np.sin(angle))
+    z: float = float(range * np.sin(elev))
 
     return x, y, z
 
@@ -50,17 +50,17 @@ def cartesian_to_spherical(x: float, y: float, z: float) -> tuple[float, float, 
     :return: Spherical coordinates in the order: range, angle, elev.
     """
 
-    range: float = np.sqrt(x**2 + y**2 + z**2)
+    range: float = float(np.sqrt(x**2 + y**2 + z**2))
 
     if range == 0:
-        angle: float = 0
-        elev: float = 0
+        angle: float = 0.0
+        elev: float = 0.0
     else:
-        angle: float = np.arctan2(y, x)
+        angle: float = float(np.arctan2(y, x))
         # Ensure the argument for arcsin is within the valid range [-1, 1]
         sin_elev_arg = z / range
         sin_elev_arg = np.clip(sin_elev_arg, -1.0, 1.0)
-        elev: float = np.arcsin(sin_elev_arg)
+        elev: float = float(np.arcsin(sin_elev_arg))
 
     return range, angle, elev
 
@@ -102,9 +102,9 @@ def transform_point(
     )
 
     trans = np.dot(rotmat_az, np.dot(rotmat_el, np.array([[x], [y], [z]])))
-    corr_x: float = trans[0, :][0]
-    corr_y: float = trans[1, :][0]
-    corr_z: float = trans[2, :][0] + height
+    corr_x: float = float(trans[0, :][0])
+    corr_y: float = float(trans[1, :][0])
+    corr_z: float = float(trans[2, :][0] + height)
 
     return corr_x, corr_y, corr_z
 
@@ -144,9 +144,9 @@ def transform_direction(
     )
 
     trans = np.dot(rotmat_az, np.dot(rotmat_el, np.array([[vx], [vy], [vz]])))
-    corr_vx: float = trans[0, :][0]
-    corr_vy: float = trans[1, :][0]
-    corr_vz: float = trans[2, :][0]
+    corr_vx: float = float(trans[0, :][0])
+    corr_vy: float = float(trans[1, :][0])
+    corr_vz: float = float(trans[2, :][0])
 
     return corr_vx, corr_vy, corr_vz
 
