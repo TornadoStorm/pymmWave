@@ -5,7 +5,8 @@ from typing import Dict
 import numpy as np
 from serial import Serial
 
-from ...utils import transform_direction, transform_point, transform_spherical_point
+from ...utils import (transform_direction, transform_point,
+                      transform_spherical_point)
 from ..sensor_parser import SensorParser
 
 
