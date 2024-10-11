@@ -5,8 +5,7 @@ from typing import Dict
 import numpy as np
 from serial import Serial
 
-from ...utils import (transform_direction, transform_point,
-                      transform_spherical_point)
+from ...utils import transform_direction, transform_point, transform_spherical_point
 from ..sensor_parser import SensorParser
 
 
@@ -25,57 +24,57 @@ class AreaScannerParser(SensorParser):
 
         result = {}
 
+        data = s.read(8)
+
+        packet_version, total_packet_len = struct.unpack("<2I", data)
+
         # Version
-        packet_version = int.from_bytes(s.read(4), byteorder="little")
         result["major_num"] = (packet_version >> 24) & 0xFF
         result["minor_num"] = (packet_version >> 16) & 0xFF
         result["bugfix_num"] = (packet_version >> 8) & 0xFF
         result["build_num"] = packet_version & 0xFF
 
         # Total packet length
-        result["total_packet_len"] = int.from_bytes(s.read(4), byteorder="little")
+        result["total_packet_len"] = total_packet_len
 
-        # Platform type
-        result["platform_type"] = int.from_bytes(s.read(4), byteorder="little")
+        data = s.read(total_packet_len - 8)  # Read the rest of the packet
 
-        # Frame number
-        result["frame_number"] = int.from_bytes(s.read(4), byteorder="little")
-
-        # Time in CPU cycles when the message was created
-        result["time_cpu_cycles"] = int.from_bytes(s.read(4), byteorder="little")
-
-        # Number of detected objects
-        result["num_detected_obj"] = int.from_bytes(s.read(4), byteorder="little")
-
-        # Number of TLVs
-        result["num_tlvs"] = int.from_bytes(s.read(4), byteorder="little")
-
-        # Subframe number
-        result["subframe_number"] = int.from_bytes(s.read(4), byteorder="little")
-
-        # Number of static detected objects
-        result["num_static_detected_obj"] = int.from_bytes(
-            s.read(4), byteorder="little"
-        )
+        offset = 28
+        (
+            result["platform_type"],  # Platform type
+            result["frame_number"],  # Frame number
+            result["time_cpu_cycles"],  # Time in cycles when the message was created
+            result["num_detected_obj"],  # Number of detected objects
+            result["num_tlvs"],  # Number of TLVs
+            result["subframe_number"],  # Subframe number
+            result["num_static_detected_obj"],  # Number of static detected objects
+        ) = struct.unpack("<7I", data[:offset])
 
         if result["num_tlvs"] != 0:
+            result["dynamic_points"] = []
+
             # Parse TLVs
             for _ in range(result["num_tlvs"]):
-                tlv_type = int.from_bytes(s.read(4), byteorder="little")
-                tlv_length = int.from_bytes(s.read(4), byteorder="little")
-                tlv_payload = s.read(tlv_length)
+                tlv_type, tlv_length = struct.unpack("<2I", data[offset : offset + 8])
+                offset += 8
+                tlv_payload = data[offset : offset + tlv_length]
+                offset += tlv_length
 
                 match tlv_type:
                     case 1:
                         result["dynamic_points"] = []
                         for i in range(0, len(tlv_payload), 16):
-                            current_point = tlv_payload[i : i + 16]
+                            vals = tlv_payload[i : i + 16]
+
+                            raw_range, raw_angle, raw_elev, raw_doppler = struct.unpack(
+                                "<4f", vals
+                            )
 
                             # Transformed spherical coordinates
                             pos = transform_spherical_point(
-                                struct.unpack("f", current_point[0:4])[0],
-                                struct.unpack("f", current_point[4:8])[0],
-                                struct.unpack("f", current_point[8:12])[0],
+                                raw_range,
+                                raw_angle,
+                                raw_elev,
                                 self.height,
                                 self.elevation_tilt,
                             )
@@ -86,32 +85,34 @@ class AreaScannerParser(SensorParser):
                                     "range": pos[0],
                                     "angle": pos[1],
                                     "elev": pos[2],
-                                    "doppler": struct.unpack("f", current_point[12:16])[
-                                        0
-                                    ],
+                                    "doppler": raw_doppler,
                                     "snr": 0,  # Default value
                                     "noise": 0,  # Default value
                                 }
                             )
                     case 7:
-                        for i in range(0, len(tlv_payload) // 4, 1):
-                            current_point = tlv_payload[(i * 4) : (i * 4) + 4]
-                            result["dynamic_points"][i]["snr"] = int.from_bytes(
-                                current_point[0:2], byteorder="little"
-                            )
-                            result["dynamic_points"][i]["noise"] = int.from_bytes(
-                                current_point[2:4], byteorder="little"
-                            )
+                        j = 0
+                        for i in range(0, len(tlv_payload), 4):
+                            vals = tlv_payload[i : i + 4]
+                            (
+                                result["dynamic_points"][j]["snr"],
+                                result["dynamic_points"][j]["noise"],
+                            ) = struct.unpack("<2H", vals)
+                            j += 1
                     case 8:
                         result["static_points"] = []
                         for i in range(0, len(tlv_payload), 16):
-                            current_point = tlv_payload[i : i + 16]
+                            vals = tlv_payload[i : i + 16]
+
+                            raw_x, raw_y, raw_z, raw_doppler = struct.unpack(
+                                "<4f", vals
+                            )
 
                             # Transformed position
                             pos = transform_point(
-                                struct.unpack("f", current_point[0:4])[0],
-                                struct.unpack("f", current_point[4:8])[0],
-                                struct.unpack("f", current_point[8:12])[0],
+                                raw_x,
+                                raw_y,
+                                raw_z,
                                 self.height,
                                 self.elevation_tilt,
                             )
@@ -121,57 +122,66 @@ class AreaScannerParser(SensorParser):
                                     "x": pos[0],
                                     "y": pos[1],
                                     "z": pos[2],
-                                    "doppler": struct.unpack("f", current_point[12:16])[
-                                        0
-                                    ],
+                                    "doppler": raw_doppler,
                                     "snr": 0,  # Default value
                                     "noise": 0,  # Default value
                                 }
                             )
                     case 9:
-                        for i in range(0, len(tlv_payload) // 4, 1):
-                            current_point = tlv_payload[(i * 4) : (i * 4) + 4]
-                            result["static_points"][i]["snr"] = int.from_bytes(
-                                current_point[0:2], byteorder="little"
-                            )
-                            result["static_points"][i]["noise"] = int.from_bytes(
-                                current_point[2:4], byteorder="little"
-                            )
+                        j = 0
+                        for i in range(0, len(tlv_payload), 4):
+                            vals = tlv_payload[i : i + 4]
+                            (
+                                result["static_points"][j]["snr"],
+                                result["static_points"][j]["noise"],
+                            ) = struct.unpack("<2H", vals)
+                            j += 1
                     case 10:
                         result["tracked_objects"] = []
                         for i in range(0, len(tlv_payload), 40):
-                            current_point = tlv_payload[i : i + 40]
+                            vals = tlv_payload[i : i + 40]
+
+                            target_id = int.from_bytes(vals[0:4], byteorder="little")
+                            (
+                                raw_pos_x,
+                                raw_pos_y,
+                                raw_vel_x,
+                                raw_vel_y,
+                                raw_accel_x,
+                                raw_accel_y,
+                                raw_pos_z,
+                                raw_vel_z,
+                                raw_accel_z,
+                            ) = struct.unpack("<9f", vals[4:40])
 
                             # Transformed position
                             pos = transform_point(
-                                struct.unpack("f", current_point[4:8])[0],
-                                struct.unpack("f", current_point[8:12])[0],
-                                struct.unpack("f", current_point[28:32])[0],
+                                raw_pos_x,
+                                raw_pos_y,
+                                raw_pos_z,
                                 self.height,
                                 self.elevation_tilt,
                             )
 
                             # Transformed velocity
                             vel = transform_direction(
-                                struct.unpack("f", current_point[12:16])[0],
-                                struct.unpack("f", current_point[16:20])[0],
-                                struct.unpack("f", current_point[32:36])[0],
+                                raw_vel_x,
+                                raw_vel_y,
+                                raw_vel_z,
                                 self.elevation_tilt,
                             )
 
                             # Transformed acceleration
                             accel = transform_direction(
-                                struct.unpack("f", current_point[20:24])[0],
-                                struct.unpack("f", current_point[24:28])[0],
-                                struct.unpack("f", current_point[36:40])[0],
+                                raw_accel_x,
+                                raw_accel_y,
+                                raw_accel_z,
                                 self.elevation_tilt,
                             )
 
                             result["tracked_objects"].append(
                                 {
-                                    "target_id": int.from_bytes(
-                                        current_point[0:4], byteorder="little"
-                                    ),
+                                    "target_id": target_id,
                                     "pos_x": pos[0],
                                     "pos_y": pos[1],
                                     "vel_x": vel[0],
