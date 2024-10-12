@@ -92,6 +92,29 @@ class TestTransformPoint(unittest.TestCase):
             self.assertAlmostEqual(result[1], expected[1], places=3)
             self.assertAlmostEqual(result[2], expected[2], places=3)
 
+    def test_transform_point_basic(self):
+        # Testing some manually entered basic values
+        for _ in range(100):
+            height = random.uniform(-100.0, 100.0)
+            azimuth_tilt = 0
+            elevation_tilt = np.radians(-90)
+
+            points = [
+                (0, 0, 1),
+                (0, 1, 0),
+                (1, 0, 0),
+            ]
+
+            transformed = [
+                (0, 1, height),
+                (0, 0, -1 + height),
+                (1, 0, height),
+            ]
+
+            self._test_transformation(
+                height, elevation_tilt, azimuth_tilt, points, transformed
+            )
+
     def test_transform_point(self):
         """Test a bunch of values generated from MATLAB to ensure correctness."""
 
