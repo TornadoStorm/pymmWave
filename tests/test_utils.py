@@ -7,6 +7,15 @@ import src.pymmWave.utils as utils
 
 
 class TestCoordinateConversion(unittest.TestCase):
+    def test_constant_range(self):
+        for _ in range(100):
+            r = random.uniform(0.0, 100.0)
+            angle = random.uniform(-np.pi, np.pi)
+            elev = random.uniform(-np.pi / 2, np.pi / 2)
+
+            x, y, z = utils.spherical_to_cartesian(r, angle, elev)
+            self.assertAlmostEqual(r, np.sqrt(x**2 + y**2 + z**2), places=4)
+
     def test_zero_range(self):
         for _ in range(100):
             angle = random.uniform(-np.pi, np.pi)
