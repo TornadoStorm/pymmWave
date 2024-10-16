@@ -313,13 +313,30 @@ class IWR6843AOP(Sensor):
 
         return None
 
-    def stop_sensor(self):
-        """This function attempts to close all serial ports and update internal state booleans."""
+    def stop_sensor(self, send_stop: bool = True) -> None:
+        """This function attempts to close all serial ports and update internal state booleans.
+
+        Args:
+            send_stop (bool, optional): Sends a sensorStop command to the conf port before disconnecting. Defaults to True.
+        """
+
+        # Send stop command
+        if send_stop:
+            try:
+                self._ser_config.write(b"sensorStop\n")
+                response = self._ser_config.read(100)
+                if self._verbose:
+                    self.log(f"sensorStop response: {response}")
+            except:
+                pass
+
+        # Close ports
         try:
-            self._ser_config.close()  # type: ignore
-            self._ser_data.close()  # type: ignore
+            self._ser_config.close()
+            self._ser_data.close()
         except SerialException:
             pass
+
         self._update_alive()
 
     def get_update_freq(self) -> float:
