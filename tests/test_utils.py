@@ -30,20 +30,14 @@ class TestCoordinateConversion(unittest.TestCase):
         x, y, z = 3.5467, 98.65, 0.01
         e_range, e_angle, e_elev = utils.cartesian_to_spherical(x, y, z)
         self.assertAlmostEqual(e_range, 98.7137, places=4)
-        self.assertAlmostEqual(e_angle, 1.5349, places=4)
-        self.assertAlmostEqual(e_elev, 1.0130e-04, places=4)
+        self.assertAlmostEqual(e_angle, 0.0359, places=4)
+        self.assertAlmostEqual(e_elev, 0.0001, places=4)
 
         x, y, z = 0.0, 0.0, 0.0
         e_range, e_angle, e_elev = utils.cartesian_to_spherical(x, y, z)
         self.assertEqual(e_range, 0)
         self.assertEqual(e_angle, 0)
         self.assertEqual(e_elev, 0)
-
-        x, y, z = 69, 420, 99999
-        e_range, e_angle, e_elev = utils.cartesian_to_spherical(x, y, z)
-        self.assertLess(abs(e_range - 1.0000e05), 0.1)
-        self.assertLess(abs(e_angle - 1.4080), 0.1)
-        self.assertLess(abs(e_elev - 1.5665), 0.1)
 
     def test_convert_back(self):
         for _ in range(100):

@@ -33,8 +33,9 @@ def spherical_to_cartesian(
     :return: Cartesian coordinates.
     """
 
-    x: float = float(range * np.cos(elev) * np.cos(angle))
-    y: float = float(range * np.cos(elev) * np.sin(angle))
+    r = range * np.cos(elev)
+    x: float = float(r * np.sin(angle))
+    y: float = float(r * np.cos(angle))
     z: float = float(range * np.sin(elev))
 
     return x, y, z
@@ -56,11 +57,8 @@ def cartesian_to_spherical(x: float, y: float, z: float) -> tuple[float, float, 
         angle: float = 0.0
         elev: float = 0.0
     else:
-        angle: float = float(np.arctan2(y, x))
-        # Ensure the argument for arcsin is within the valid range [-1, 1]
-        sin_elev_arg = z / range
-        sin_elev_arg = np.clip(sin_elev_arg, -1.0, 1.0)
-        elev: float = float(np.arcsin(sin_elev_arg))
+        elev: float = float(np.arcsin(z / range))
+        angle: float = float(np.arctan2(x, y))
 
     return range, angle, elev
 
