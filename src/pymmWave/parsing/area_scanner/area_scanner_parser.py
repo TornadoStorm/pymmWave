@@ -1,8 +1,6 @@
-import math
 import struct
 from typing import Dict
 
-import numpy as np
 from serial import Serial
 
 from ...utils import transform_direction, transform_point, transform_spherical_point
@@ -20,7 +18,7 @@ class AreaScannerParser(SensorParser):
     elevation_tilt: float = 0
     """Elevation tilt of the sensor in radians."""
 
-    def parse(self, s: Serial) -> Dict:
+    def parse(self, s: Serial) -> Dict | None:
 
         result = {}
 
@@ -199,6 +197,8 @@ class AreaScannerParser(SensorParser):
                                 [tlv_payload[i]], byteorder="little"
                             )
                     case _:
-                        print(f"Unknown TLV type: {tlv_type}")
+                        # Discard the packet or else it will mess up the parsing
+                        print(f"Unknown TLV type: {tlv_type}. Discarding packet")
+                        return None
 
         return result

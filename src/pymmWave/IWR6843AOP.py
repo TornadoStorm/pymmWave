@@ -275,6 +275,8 @@ class IWR6843AOP(Sensor):
                     raise SerialException()
 
                 new_data = self.parser.parse(self._ser_data)
+                if new_data is None:
+                    continue  # Packet was discarded. Try again.
 
                 if self._active_data.full():
                     self._active_data.get_nowait()
