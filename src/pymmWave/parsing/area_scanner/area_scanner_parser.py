@@ -1,7 +1,7 @@
 import struct
 from typing import Dict
 
-from serial import Serial
+from aioserial import AioSerial
 
 from ...utils import transform_direction, transform_point, transform_spherical_point
 from ..sensor_parser import SensorParser
@@ -18,11 +18,11 @@ class AreaScannerParser(SensorParser):
     elevation_tilt: float = 0
     """Elevation tilt of the sensor in radians."""
 
-    def parse(self, s: Serial) -> Dict | None:
+    async def parse(self, s: AioSerial) -> Dict | None:
 
         result = {}
 
-        data = s.read(8)
+        data = await s.read_async(8)
 
         packet_version, total_packet_len = struct.unpack("<2I", data)
 
@@ -35,7 +35,7 @@ class AreaScannerParser(SensorParser):
         # Total packet length
         result["total_packet_len"] = total_packet_len
 
-        data = s.read(total_packet_len - 8)  # Read the rest of the packet
+        data = await s.read_async(total_packet_len - 8)  # Read the rest of the packet
 
         offset = 28
         (

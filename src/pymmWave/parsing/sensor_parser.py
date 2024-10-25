@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
-from typing import Any, Dict
+from typing import Dict
 
-from serial import Serial
+from aioserial import AioSerial
 
 
 class SensorParser(ABC):
@@ -10,7 +10,7 @@ class SensorParser(ABC):
     """
 
     @abstractmethod
-    def parse(self, s: Serial) -> Dict | None:
+    async def parse(self, s: AioSerial) -> Dict | None:
         """Parse raw data from the sensor into a readable JSON-serializeable format. The sensor should be in a state where it already read the magic word, meaning the start of the packet will not contain the magic word.
 
         Args:

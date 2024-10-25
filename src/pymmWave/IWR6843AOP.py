@@ -3,8 +3,7 @@ from dataclasses import dataclass
 from time import time
 from typing import Dict, Optional
 
-from serial import Serial  # type: ignore
-from serial.serialutil import SerialException
+from aioserial import AioSerial, SerialException
 
 from .constants import ASYNC_SLEEP, MAGIC_NUMBER
 from .parsing.area_scanner.area_scanner_parser import AreaScannerParser
@@ -47,8 +46,8 @@ class IWR6843AOP(Sensor):
 
         super().__init__()
         self._is_alive: bool = False
-        self._ser_config: Optional[Serial] = None
-        self._ser_data: Optional[Serial] = None
+        self._ser_config: Optional[AioSerial] = None
+        self._ser_data: Optional[AioSerial] = None
         self._verbose = verbose
         self._config_sent = False
         self.name = name
@@ -86,7 +85,7 @@ class IWR6843AOP(Sensor):
 
         """
         try:
-            self._ser_config = Serial(com_port, baud_rate, timeout=timeout)
+            self._ser_config = AioSerial(com_port, baud_rate, timeout=timeout)
         except SerialException as e:
             print(e)
             return False
@@ -122,7 +121,7 @@ class IWR6843AOP(Sensor):
         """
 
         try:
-            self._ser_data = Serial(com_port, baud_rate, timeout=timeout)
+            self._ser_data = AioSerial(com_port, baud_rate, timeout=timeout)
         except SerialException as e:
             print(e)
             return False
@@ -269,12 +268,12 @@ class IWR6843AOP(Sensor):
             await sleep(ASYNC_SLEEP)
             try:
                 # Find our packet start
-                current_data = self._ser_data.read_until(MAGIC_NUMBER)
+                current_data = await self._ser_data.read_until_async(MAGIC_NUMBER)
 
                 if current_data is None:
                     raise SerialException()
 
-                new_data = self.parser.parse(self._ser_data)
+                new_data = await self.parser.parse(self._ser_data)
                 if new_data is None:
                     continue  # Packet was discarded. Try again.
 

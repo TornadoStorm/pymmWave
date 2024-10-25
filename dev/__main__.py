@@ -1,15 +1,32 @@
 import asyncio
+from collections import deque
 
 from config import SENSOR_CONF_PORT, SENSOR_DATA_PORT
 
 from pymmWave.IWR6843AOP import IWR6843AOP
+from pymmWave.parsing.area_scanner.models import AreaScannerData
 from pymmWave.utils import load_cfg_file
 
 
 async def read_sensor(sensor: IWR6843AOP):
+    loop = asyncio.get_event_loop()
+    last_time = loop.time()
+
+    frequency_window = deque(maxlen=10)
+    avg_frequency = 0
+
     while True:
         data = await sensor.get_data()
-        print(data)
+        parsed = AreaScannerData(data)
+
+        delta = loop.time() - last_time
+        last_time = loop.time()
+
+        frequency_window.append(1 / delta)
+        avg_frequency = sum(frequency_window) / len(frequency_window)
+
+        print(f"Received packet {parsed.time_cpu_cycles} at {avg_frequency:.0f} Hz")
+        # print(data)
 
 
 if __name__ == "__main__":
