@@ -25,7 +25,7 @@ async def read_sensor(sensor: IWR6843AOP):
         frequency_window.append(1 / delta)
         avg_frequency = sum(frequency_window) / len(frequency_window)
 
-        print(f"Received packet {parsed.time_cpu_cycles} at {avg_frequency:.0f} Hz")
+        print(f"Received packet {parsed.frame_number} at {avg_frequency:.0f} Hz")
         # print(data)
 
 
