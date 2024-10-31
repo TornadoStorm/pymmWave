@@ -1,9 +1,16 @@
 import asyncio
 from collections import deque
 
-from config import SENSOR_CONF_PORT, SENSOR_DATA_PORT
+import numpy as np
+from config import (
+    SENSOR_CONF_PORT,
+    SENSOR_DATA_PORT,
+    SENSOR_ELEVATION_TILT,
+    SENSOR_HEIGHT,
+)
 
 from pymmWave.IWR6843AOP import IWR6843AOP
+from pymmWave.parsing.area_scanner.area_scanner_parser import AreaScannerParser
 from pymmWave.parsing.area_scanner.models import AreaScannerData
 from pymmWave.utils import load_cfg_file
 
@@ -32,6 +39,11 @@ async def read_sensor(sensor: IWR6843AOP):
 if __name__ == "__main__":
     sensor = IWR6843AOP("Main")
     config_file = load_cfg_file("dev/mmwave_configs/area_scanner_68xx_AOP.cfg")
+
+    parser = AreaScannerParser()
+    parser.elevation_tilt = SENSOR_ELEVATION_TILT
+    parser.height = SENSOR_HEIGHT
+    sensor.parser = parser
 
     # CONFIG serial port
     config_connected = sensor.connect_config(SENSOR_CONF_PORT, 115200)
