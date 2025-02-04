@@ -1,17 +1,11 @@
 # pymmWave
 
-Documentation can be found here: https://pymmwave.readthedocs.io/en/latest/#
+This is a python package built upon the original [pymmWave](https://github.com/pfeghali/pymmWave) package by pfeghali for the TCS Design Project 2024/2025 Group 6 project. This package extends the functionality and modularity for reading and transforming sensor data from Texas Instruments mmWave sensors with different firmware and configurations.
 
-Goals:
-An easy to use mmWave library to get up and running within minutes.
-Simple data interfacing, and complete type hinting.
-Easy classes to implement for custom implementations.
+## Quickstart
 
-This library is reliant on Python's asyncio package. User applications should interface with this tool with some sort of event loop manager.
-Future support around this may be built.
+Ensure you have flashed the firmware for the Industrial Toolbox's [Area Scanner](https://dev.ti.com/tirex/explore/content/mmwave_industrial_toolbox_4_12_1/labs/Area_Scanner/docs/area_scanner_users_guide.html) project, and installed all required dependencies in this project's **requirements.txt** file. You can then run **dev/\_\_main.py\_\_** and have a look at its contents for a basic demo of how to use this package to read sensor data. Take note of the constants defined in **dev/config.py** to configure your sensor's values.
 
-This is designed to function with the COTS TI IWR6843AOP system. The abstract classes are designed to be used in a more generic manner, and have been already used to implement a 2D LiDAR solution.
+## Custom / Different Sensor Firmware
 
-Please read the license file. 
-
-Please report any bugs as Github issues.
+If the output data of your sensor differs from the default Area Scanner output data, you may implement your own parser for the sensor. See the implementation of the AreaScannerParser class for how to make your own parser.

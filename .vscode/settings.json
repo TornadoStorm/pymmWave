@@ -1,17 +1,5 @@
 {
-    "python.pythonPath": "/usr/local/anaconda3/envs/threenine/bin/python",
-    "cSpell.words": [
-        "MMWDEMO",
-        "MULT",
-        "Objs",
-        "TLVs",
-        "bytevec",
-        "dxdydz",
-        "pymm",
-        "rotvec",
-        "serialutil",
-        "xrad",
-        "xyzd",
-        "zrad"
-    ]
+  "python.testing.unittestArgs": ["-v", "-s", "./tests", "-p", "test_*.py"],
+  "python.testing.pytestEnabled": false,
+  "python.testing.unittestEnabled": true
 }

@@ -1,0 +1,5 @@
+numpy
+scipy
+aioserial # Use this over pyserial for easier concurrency
+pytest
+python-dotenv

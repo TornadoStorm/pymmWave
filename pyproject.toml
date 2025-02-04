@@ -1,0 +1,26 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "pymmWave"
+version = "1.4.2"
+description = "A TI mmWave RADAR EVM integration library."
+readme = "README.md"
+requires-python = ">=3.12.0"
+license = { file = "LICENSE" }
+authors = [
+    { name = "Julian Dühnen", email = "julianduehnen@gmail.com" }
+]
+dependencies = [
+    "numpy>=2.1.1",
+    "scipy>=1.14.1",
+    "aioserial>=1.3.1"
+]
+
+[project.urls]
+Homepage = "https://gitlab.utwente.nl/dp-6/pymmwave"
+
+[tool.setuptools]
+py-modules = ["pymmWave"]
+include-package-data = true
